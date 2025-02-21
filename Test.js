@@ -48,3 +48,54 @@
   //   });
   // };
   
+  // const [tasks, setTasks] = useState([
+  //   {
+  //     id: 1,
+  //     title: "Add Tastes To HomePage",
+  //     description: "Add new taste-related content to the homepage.",
+  //     status: "TODO",
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Fix Navbar Issue",
+  //     description: "Fix responsiveness issues in the navbar.",
+  //     status: "TODO",
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "Implement Drag and Drop",
+  //     description: "Implement drag and drop functionality for tasks.",
+  //     status: "In_Progress",
+  //   },
+  //   {
+  //     id: 4,
+  //     title: "Test All Features",
+  //     description: "Ensure that all features work correctly.",
+  //     status: "DONE",
+  //   },
+  //   {
+  //     id: 5,
+  //     title: "Write Documentation",
+  //     description: "Write detailed documentation for the project.",
+  //     status: "DONE",
+  //   },
+  //   {
+  //     id: 6,
+  //     title: "Fix CSS Bugs",
+  //     description: "Fix CSS bugs related to the layout and styling.",
+  //     status: "DONE",
+  //   },
+  // ]);
+  // useEffect(() => {
+  //   const fetchTasks = async () => {
+  //     try {
+  //       const { data } = await axios("http://localhost:3000/tasks/example@example.com");
+  //       setTasks(data);
+  //       console.log(data);
+  //     } catch (error) {
+  //       console.error("Error fetching tasks:", error);
+  //     }
+  //   };
+
+  //   fetchTasks();
+  // }, []);

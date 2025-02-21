@@ -1,14 +1,25 @@
 import React, { useState } from "react";
-import "./style.css";
+import axios from "axios";
 
 const InputField = ({ setTodo, tasks }) => {
   const [error, setError] = useState(""); 
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    dueDate: ''
+  });
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const title = e.target.title.value;
-    const description = e.target.description.value;
+    const { title, description, dueDate } = formData;
 
     // Validate title
     if (!title) {
@@ -20,46 +31,71 @@ const InputField = ({ setTodo, tasks }) => {
       return;
     }
 
-
     if (description.length > 200) {
       setError("Description cannot exceed 200 characters!");
       return;
     }
 
+    // Validate dueDate (if needed)
+    if (!dueDate) {
+      setError("Due date is required!");
+      return;
+    }
 
     const newTask = {
-      id: tasks.length + 1,
       title,
       description,
+      dueDate,
       status: "TODO",
-      timestamp: new Date().toISOString(), 
+      timestamp: new Date().toISOString(),
+      email: "example@example.com"
     };
 
-    setTodo([...tasks, newTask]);
-    setError(""); 
-    console.log(newTask); 
+    try {
+      const { data } = await axios.post("http://localhost:3000/tasks", newTask);
+      const newData = { _id: data.insertedId, ...newTask };
+      setTodo([...tasks, newData]);
+      setFormData({ title: '', description: '', dueDate: '' }); // Reset input fields
+      setError(""); // Clear error message
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      setError("Something went wrong. Please try again.");
+    }
   };
 
   return (
-    <form className="input" onSubmit={handleSubmit}>
-  
+    <form className="flex flex-col w-full max-w-lg sm:w-11/12 md:w-3/4 lg:w-1/2 gap-4 p-6 rounded-lg shadow-xl bg-white" onSubmit={handleSubmit}>
       <input
         type="text"
         placeholder="Enter Task Title"
         name="title"
-        className="input__box"
+        value={formData.title}
+        onChange={handleChange}
+        className="w-full p-3 text-base rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
       />
       
-  
       <textarea
         placeholder="Enter Task Description"
         name="description"
-        className="input__box"
+        value={formData.description}
+        onChange={handleChange}
+        className="w-full p-3 text-base rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all min-h-[80px]"
       ></textarea>
 
-      {error && <div className="error-message">{error}</div>}
+      <input
+        type="date"
+        name="dueDate"
+        value={formData.dueDate}
+        onChange={handleChange}
+        className="w-full p-3 text-base rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+      />
 
-      <button type="submit" className="input_submit">
+      {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+
+      <button 
+        type="submit" 
+        className="w-full mt-4 py-3 text-white font-semibold bg-blue-600 rounded-lg hover:bg-blue-500 active:scale-95 focus:outline-none transition-all duration-200"
+      >
         Enter Task
       </button>
     </form>
