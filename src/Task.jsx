@@ -1,53 +1,53 @@
 import { useDraggable } from "@dnd-kit/core";
 import axios from "axios";
 import React from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Task({ taskData, setTasks }) {
   const { _id, title, description, timestamp, dueDate } = taskData;
-  const { attributes, listeners, setNodeRef, transform, transition } = useDraggable({
-    id: _id,
-  });
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useDraggable({
+      id: _id,
+    });
 
   const style = transform
     ? {
         transform: `translate(${transform.x}px, ${transform.y}px)`,
-        transition: transition ? transition : undefined,
+        transition: transition || undefined,
       }
     : undefined;
 
-  const formattedTimestamp = new Date(timestamp).toLocaleString(); // e.g., "2/21/2025, 5:32:41 AM"
-  
-  // Check if the task is overdue or due today
-  const currentDate = new Date();
+  const formattedTimestamp = new Date(timestamp).toLocaleString();
   const dueDateObj = new Date(dueDate);
+  const currentDate = new Date();
   const isOverdue = dueDateObj < currentDate;
-  const isDueToday = dueDateObj.toDateString() === currentDate.toDateString();
-
-  // Get the due date formatted
   const formattedDueDate = dueDateObj.toLocaleDateString();
-
-  // Delete Handler
+  const navigate = useNavigate();
   const handleDelete = async (event) => {
     event.stopPropagation();
+    event.preventDefault();
 
     try {
-      const { data } = await axios.delete(`http://localhost:3000/tasks/${_id}`);
-      console.log(data);
+      console.log("Deleting task:", _id);
+      const { data } = await axios.delete(`${import.meta.env.VITE_URL}/tasks/${_id}`);
+  console.log(data);
+      if (data.result.acknowledged) {
+        toast.success("Task Deleted");
+      }
+
       setTasks((prevTasks) => prevTasks.filter((task) => task._id !== _id));
     } catch (error) {
       console.error("Error deleting task:", error);
     }
   };
 
-  // Determine the background color based on the task status
-  let taskStatusClass = "";
-  if (isOverdue) {
-    taskStatusClass = "bg-red-500"; // Overdue tasks
-  } else if (isDueToday) {
-    taskStatusClass = "bg-yellow-500"; // Tasks due today
-  } else {
-    taskStatusClass = "bg-green-500"; // Future tasks
-  }
+  const handleUpdate = async (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    console.log(_id);
+    navigate(`/edit/${_id}`);
+  };
 
   return (
     <div
@@ -55,23 +55,37 @@ export default function Task({ taskData, setTasks }) {
       {...attributes}
       {...listeners}
       style={style}
-      className={`hover:scale-105 duration-300 text-white p-5 rounded-lg w-[290px] mx-auto my-5 cursor-grab  dark:text-white ${taskStatusClass}`}
+      className="hover:scale-105 duration-300 text-white p-3 rounded-lg w-[290px] mx-auto my-5 cursor-grab bg-gray-700"
     >
       <div className="flex justify-between gap-2">
         <div>
-          <p className="font-bold text-sm font-sans uppercase">{title}</p>
-          <p className="text-sm mt-2 line-clamp-2">{description || "No Description"}</p>
-          <p className="text-xs mt-2">{`Created on: ${formattedTimestamp}`}</p>
-          <p className="text-xs mt-2">{`Due: ${formattedDueDate}`}</p>
+          <p className="font-bold text-sm uppercase">{title}</p>
+          <p className="text-sm mt-2">{description || "No Description"}</p>
+          {/* <p className={`text-xs mt-2 ${isOverdue ? "text-red-800" : 'text-white'}`}>{`Created: ${formattedTimestamp}`}</p> */}
+          <p className={`text-xs mt-2 ${isOverdue ? "text-red-500" : 'text-white'}`}>{`Due: ${formattedDueDate}`}</p>
         </div>
-        <div className="flex flex-col gap-4 cursor-pointer">
-          <div
+        <div className="flex flex-col gap-4">
+          {/* ✅ Use `onPointerDown` to prevent dragging */}
+          <button
             onClick={handleDelete}
-            className="bg-gray-100 text-black p-1 px-3 rounded-full hover:scale-110"
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            className="bg-red-500 text-white p-1 px-3 rounded-full hover:scale-110"
           >
-            D
-          </div>
-          <div className="bg-gray-100 text-black p-1 px-3 rounded-full hover:scale-110">U</div>
+            Delete
+          </button>
+          <button
+            onClick={handleUpdate}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            className="bg-blue-500 text-white p-1 px-3 rounded-full hover:scale-110"
+          >
+            Update
+          </button>
         </div>
       </div>
     </div>

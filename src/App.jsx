@@ -1,33 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Column from "./Column";
 import { DndContext } from "@dnd-kit/core";
 import InputField from "./InputField";
 import axios from "axios";
-import './index.css'; // Ensure the CSS is being applied correctly
+import './index.css'; 
+import { AuthContext } from "./AuthContex";
+import Loader from "./Loader";
+import { useNavigate } from "react-router-dom";
 
 export default function New() {
   const [tasks, setTasks] = useState([]);
-  const [darkMode, setDarkMode] = useState(false); // State for dark mode
-
+  const [darkMode, setDarkMode] = useState(false); 
+  const { user,  loading, logOut } = useContext(AuthContext);
+ 
   const columns = [
     { id: "TODO", title: "TO Do" },
     { id: "In_Progress", title: "In Progress" },
     { id: "DONE", title: "Done" },
   ];
-
+  const navigate = useNavigate()
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const { data } = await axios("http://localhost:3000/tasks/example@example.com");
-        setTasks(data);
-        console.log(data);
+        const { data } = await axios(`${import.meta.env.VITE_URL}/tasks/${user?.email}`);
+   setTasks(data)
+        console.log(data); 
+
       } catch (error) {
         console.error("Error fetching tasks:", error);
       }
     };
 
     fetchTasks();
-  }, []);
+  }, [user]);
 
   // Update dark mode globally using class on body
   useEffect(() => {
@@ -40,38 +45,33 @@ export default function New() {
 
   const handleAdd = (event) => {
     const { active, over } = event;
-    if (!over) return; // If dropped outside, do nothing
+    if (!over) return;
+    if (active.id === over.id) return; 
 
-    const taskId = active.id; // Use the `id` of the task
-    const overId = over.id; // The ID of the column the task is dropped into
+    const taskId = active.id; 
+    const overId = over.id; 
 
     // Update task status and reorder them
     setTasks((prevTasks) => {
       const updatedTasks = [...prevTasks];
 
-      // Find the task being dragged
       const taskIndex = updatedTasks.findIndex((task) => task._id === taskId);
-      if (taskIndex === -1) return prevTasks; // Task not found
+      if (taskIndex === -1) return prevTasks;
 
-      const taskToMove = updatedTasks[taskIndex]; // Task being dragged
-
-      // Update the status of the task based on where it is dropped
+      const taskToMove = updatedTasks[taskIndex];
       taskToMove.status = overId;
 
-      // Remove the task from the previous position
       updatedTasks.splice(taskIndex, 1);
-
-      // Place it at the correct position in the new column
       updatedTasks.push(taskToMove);
 
       const updateTasks = async () => {
         try {
-          const { data } = await axios.put(`http://localhost:3000/tasks/status/${taskId}`, {
+          const { data } = await axios.put(`${import.meta.env.VITE_URL}/tasks/status/${taskId}`, {
             status: overId,
           });
-          console.log(data);
+          console.log("Task status updated:", data);
         } catch (error) {
-          console.error("Error fetching tasks:", error);
+          console.error("Error updating task status:", error);
         }
       };
 
@@ -81,35 +81,62 @@ export default function New() {
     });
   };
 
-  // Toggle dark mode
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
 
+  if(loading){
+    return <Loader/>
+  }
+
+  if(!user){
+    navigate('/login')
+  }
+
   return (
- 
-    <div className={`py-5 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>   <div className={` w-max mx-auto `}>
-    <h1 className="text-4xl my-5 font-semibold">MY TODO</h1>
-    <InputField setTodo={setTasks} tasks={tasks} />
-    {/* Dark mode toggle button */}
+    <div className={`min-h-screen py-5 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} transition-all duration-300`}>
+      
+      <div className="max-w-screen-xl mx-auto px-4 mt-10">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-20 my-5">
+  <h1 className="text-3xl font-semibold text-center sm:text-left mb-6 sm:mb-0">
+    TODO List {user?.displayName}
+  </h1>
+  
+  <div className="flex  flex-col md:flex-row gap-2 md:gap-5">
+    <button 
+      className="py-2 bg-blue-500 text-white px-4 rounded mb-4 sm:mb-0" 
+      onClick={() => logOut()}
+    >
+      Logout
+    </button>
+    
     <button
       onClick={toggleDarkMode}
-      className="p-2 bg-blue-500 rounded-full text-white mt-5"
+      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md transition-colors duration-300"
     >
       Toggle Dark Mode
     </button>
+  </div>
+</div>
 
-    <DndContext onDragEnd={handleAdd}>
-      <div className="grid grid-cols-3 gap-8 overflow-hidden">
-        {columns.map((column) => (
-          <Column
-            key={column.id}
-            column={column}
-            tasks={tasks.filter((task) => task.status === column.id)}
-          />
-        ))}
+        
+        <InputField setTodo={setTasks} tasks={tasks} />
+
+        
+
+        <DndContext onDragEnd={handleAdd}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {columns.map((column) => (
+              <Column
+                key={column.id}
+                column={column}
+                tasks={tasks.filter((task) => task.status === column.id)}
+                setTasks={setTasks} 
+              />
+            ))}
+          </div>
+        </DndContext>
       </div>
-    </DndContext>
-  </div></div>
+    </div>
   );
 }
