@@ -1,8 +1,7 @@
 import React, { useState, useContext } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { AuthContext } from "./AuthContex";
-
+import { AuthContext } from "../provider/AuthContex";
 const InputField = ({ setTodo, tasks }) => {
     const { user } = useContext(AuthContext);
    

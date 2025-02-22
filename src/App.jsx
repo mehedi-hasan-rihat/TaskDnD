@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useContext } from "react";
-import Column from "./Column";
+import Column from "./Components/Column";
 import { DndContext } from "@dnd-kit/core";
-import InputField from "./InputField";
+import InputField from "./Components/InputField";
 import axios from "axios";
 import './index.css'; 
-import { AuthContext } from "./AuthContex";
-import Loader from "./Loader";
+import { AuthContext } from "./provider/AuthContex";
+import Loader from "./Components/Loader";
 import { useNavigate } from "react-router-dom";
 
 export default function New() {

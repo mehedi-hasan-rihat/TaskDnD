@@ -3,10 +3,10 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import { Toaster } from "react-hot-toast";
-import Update from "./Update.jsx";
-import Login from "./Login.jsx";
+import Update from './Components/Update.jsx'
+import Login from "./Components/Login.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import AuthContext from "./AuthContex.jsx";
+import AuthContext from "./provider/AuthContex.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -14,7 +14,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/edit/:id",
-    element: <Update />,
+    element: <Update/>,
   },
   {
     path: "/login",

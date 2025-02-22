@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from 'react-hot-toast';
-import { AuthContext } from "./AuthContex"; // Assuming you are using context for auth and theme
+import { AuthContext } from "../provider/AuthContex"; // Assuming you are using context for auth and theme
 
 export default function Form() {
     const { id } = useParams();
@@ -95,6 +95,9 @@ export default function Form() {
                 >
                     Update
                 </button>
+
+                <button type="button" className="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600" onClick={()=>{navigate('/')}}
+                >back Home</button>
             </form>
         </div>
     );
